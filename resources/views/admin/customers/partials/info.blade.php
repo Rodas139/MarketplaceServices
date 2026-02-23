@@ -76,13 +76,7 @@
                     </div>
                 </div>
                 <div class="row row-5">
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            {{ Form::label('shipment_email', 'E-mail Encomendas') }}
-                            {{ Form::text('shipment_email', null, ['class' => 'form-control email nospace']) }}
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-12">
                         <div class="form-group">
                             {{ Form::label('payment_note_email', 'E-mail Notas de Pagamento') }}
                             {{ Form::text('payment_note_email', null, ['class' => 'form-control email nospace']) }}

@@ -54,7 +54,7 @@ class Customer extends Authenticatable
         'is_prospect', 'active', 'obs', 'status', 'source_name', 'source_url',
         'facebook', 'website', 'responsable', 'map_lat', 'map_lng', 'contract_date', 'contract_plan',
         'bank_code', 'bank_name', 'bank_iban', 'bank_swift', 'bank_mandate', 'currency', 'payment_condition',
-        'balance_last_update', 'balance_count_expired', 'balance_count_unpaid', 'balance_total_unpaid', 'segsocial', 'cae', 'shipment_email',
+        'balance_last_update', 'balance_count_expired', 'balance_count_unpaid', 'balance_total_unpaid', 'segsocial', 'cae',
         'payment_note_email', 'establishment_license', 'quality_name', 'responsible_quality_function', 'quality_email',
         'quality_phone', 'quality_mobile', 'commercial_name', 'responsible_commercial_function', 'commercial_email',
         'commercial_phone', 'commercial_mobile', 'fiscal_name'
