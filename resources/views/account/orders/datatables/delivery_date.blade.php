@@ -1,0 +1,1 @@
+{{\Carbon\Carbon::parse($row->delivery_date)->format('Y-m-d')}}

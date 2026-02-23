@@ -1,0 +1,1 @@
+<span>{{$row->serie_code}}</span>
