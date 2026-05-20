@@ -34,21 +34,19 @@
                             data-target="#datatable">
                             <ul class="list-inline pull-left">
                                 <li style="margin-bottom: 5px;" class="col-xs-6">
-                                    <strong>Estado</strong><br />
-                                    <div class="w-100px">
-                                        {{ Form::select('active',['' => 'Todos', '1' => 'Ativo', '0' => 'Inativo'],Request::has('active') ? Request::get('active') : '1',['class' => 'form-control input-sm filter-datatable select2']) }}
-                                    </div>
                                 </li>
                                 <li style="margin-bottom: 5px;" class="col-xs-6">
-                                    <strong>Login Gestão</strong><br />
-                                    <div class="w-100px">
-                                        {{ Form::select('login_admin',['' => 'Todos', '1' => 'Sim', '0' => 'Não'],Request::has('login_admin') ? Request::get('login_admin') : null,['class' => 'form-control input-sm filter-datatable select2']) }}
-                                    </div>
                                 </li>
                                 <li class="w-195px">
                                     <strong>Perfil</strong><br class="visible-xs" />
                                     <div class="w-140px ">
                                         {{ Form::select('role', ['' => 'Todos'] + $roles, Request::has('role') ? Request::get('role') : null, ['class' => 'form-control input-sm filter-datatable select2']) }}
+                                    </div>
+                                </li>
+                                <li style="margin-bottom: 5px;" class="col-xs-6">
+                                    <strong>Status</strong><br/>
+                                    <div class="w-100px">
+                                        {{ Form::select('status', ['' => 'Todos', 'pending' => 'Pendente', 'active' => 'Ativo', 'inactive' => 'Inativo'], Request::has('status') ? Request::get('status') : '', ['class' => 'form-control input-sm filter-datatable select2']) }}
                                     </div>
                                 </li>
                             </ul>
@@ -59,14 +57,11 @@
                                     <tr>
                                         <th class="w-1">{{ Form::checkbox('select-all', '') }}</th>
                                         <th></th>
-                                        <th class="w-1"></th>
-                                        <th class="w-1">Código</th>
                                         <th>Nome</th>
-                                        <th class="w-120px">Contactos</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
                                         <th class="w-1">Perfil</th>
-                                        <th class="w-1"><i class="fas fa-fw fa-laptop" data-toggle="tooltip"
-                                                title="Acesso à área de gestão"></i></th>
-                                        <th class="w-1">Ações</th>
+                                        <th class="w-70px">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -112,17 +107,6 @@
                         searchable: false
                     },
                     {
-                        data: 'code',
-                        name: 'code',
-                        visible: false
-                    },
-                    {
-                        data: 'photo',
-                        name: 'photo',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
                         data: 'id',
                         name: 'id',
                         'class': 'text-center'
@@ -136,14 +120,14 @@
                         name: 'email'
                     },
                     {
-                        data: 'roles',
-                        name: 'roles',
+                        data: 'status',
+                        name: 'status',
                         orderable: false,
                         searchable: false
                     },
                     {
-                        data: 'login_admin',
-                        name: 'login_admin',
+                        data: 'roles',
+                        name: 'roles',
                         orderable: false,
                         searchable: false
                     },
@@ -152,16 +136,6 @@
                         name: 'actions',
                         orderable: false,
                         searchable: false
-                    },
-                    {
-                        data: 'phone',
-                        name: 'phone',
-                        visible: false
-                    },
-                    {
-                        data: 'fullname',
-                        name: 'fullname',
-                        visible: false
                     },
                 ],
                 order: [
@@ -172,6 +146,7 @@
                     type: "POST",
                     data: function(d) {
                         d.role = $('select[name=role]').val();
+                        d.status = $('select[name=status]').val();
                         d.active = $('select[name=active]').val();
                         d.agency = $('select[name=agency]').val();
                         d.workgroup = $('select[name=workgroup]').val();

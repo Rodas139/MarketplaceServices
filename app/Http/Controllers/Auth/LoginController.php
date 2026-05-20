@@ -63,7 +63,6 @@ class LoginController extends \App\Http\Controllers\Controller
 
     /**
      * Overwrite credentials function on AuthenticatesUsers.
-     * Add option to check if user is active.
      *
      * @param Request $request
      * @return array
@@ -73,7 +72,6 @@ class LoginController extends \App\Http\Controllers\Controller
         return [
             $this->username()   => trim($request->get($this->username())),
             'password'          => trim($request->get('password')),
-            'is_active'         => 1,
         ];
     }
 
@@ -112,9 +110,6 @@ class LoginController extends \App\Http\Controllers\Controller
             if ($request->hasSession()) {
                 $request->session()->put('auth.password_confirmed_at', time());
             }
-            $user = Customer::where('email', $request->email)->first();
-            $user->last_login = Carbon::now()->toDateTimeString();
-            $user->save();
 
             return $this->sendLoginResponse($request);
         }
@@ -123,7 +118,6 @@ class LoginController extends \App\Http\Controllers\Controller
         // to login and redirect the user back to the login form. Of course, when this
         // user surpasses their maximum number of attempts they will get locked out.
         $this->incrementLoginAttempts($request);
-
 
         return $this->sendFailedLoginResponse($request);
     }

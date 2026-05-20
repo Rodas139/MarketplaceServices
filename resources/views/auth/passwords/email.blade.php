@@ -12,7 +12,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     {{ Form::label('email', 'E-mail') }}
-                    {{ Form::email('email', null, array('class' => 'form-control nospace email lowercase', 'autocomplete' => 'off', 'required')) }}
+                    {{ Form::email('email', null, array('class' => 'form-control nospace email lowercase', 'autocomplete' => 'off', 'required', 'id' => 'reset-email')) }}
                 </div>
             </div>
             <div class="modal-footer">

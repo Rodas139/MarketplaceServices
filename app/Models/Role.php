@@ -103,6 +103,6 @@ class Role extends ModelsRole implements Sortable
     */
     public function perms()
     {
-        return $this->belongsToMany('App\Models\Permission');
+        return $this->belongsToMany(Permission::class);
     }
 }

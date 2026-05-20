@@ -49,7 +49,6 @@ class AccountController extends \App\Http\Controllers\Admin\Controller
             }
 
             $user->password = bcrypt($input['password']);
-            $user->uncrypted_password = $input['password'];
             $user->save();
 
             return Redirect::back()->with('success', 'Palavra-passe alterada com sucesso. Já pode utilizar a nova palavra-passe para iníciar sessão.');

@@ -5,16 +5,35 @@
                 {{ Form::open(['route' => 'admin.password.reset.submit', 'class' => 'login100-form validate-form']) }}
                 <input type="hidden" name="token" value="{{ $token }}">
                 <span class="login100-form-title" style="padding-bottom: 48px">
-                    <img src="{{ asset('assets/img/logo/logo_sm.png') }}"/>
+                    <img src="{{ asset('assets/img/logo/logo_sm_.png') }}"/>
                 </span>
                 <div class="main-block">
-                    @if($errors->has('email'))
+                    @if (session('status'))
                         <div class="help-block block-success">
+                            <i class="zmdi zmdi-check"></i> {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if($errors->has('email'))
+                        <div class="help-block">
                             <i class="zmdi zmdi-alert-circle"></i> {{ $errors->first('email') }}
                         </div>
                     @endif
+
+                    @if($errors->has('token'))
+                        <div class="help-block">
+                            <i class="zmdi zmdi-alert-circle"></i> {{ $errors->first('token') }}
+                        </div>
+                    @endif
+
+                    @if($errors->has('password'))
+                        <div class="help-block">
+                            <i class="zmdi zmdi-alert-circle"></i> {{ $errors->first('password') }}
+                        </div>
+                    @endif
+
                     <div class="wrap-input100 validate-input"  data-validate="Insira um e-mail válido.">
-                        {{ Form::email('email', null, ['class' => 'input100 nospace']) }}
+                        {{ Form::email('email', $email ?? null, ['class' => 'input100 nospace']) }}
                         <span class="focus-input100" data-placeholder="E-mail"></span>
                     </div>
                     <div class="wrap-input100 validate-input" data-validate="Indique a nova password.">

@@ -45,19 +45,11 @@ class Customer extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'code', 'category_id', 'manager_id', 'server_id', 'support_mins', 'support_price', 'name', 'vat',
-        'billing_name', 'billing_address', 'billing_zip_code', 'billing_city', 'billing_country', 'billing_email',
-        'contact_email', 'phone', 'mobile', 'address', 'zip_code',
-        'city', 'country', 'billing_code', 'bank_description',
-        'display_name', 'email', 'password',  'last_login', 'ip',
-        'accession_date', 'license_active',
-        'is_prospect', 'active', 'obs', 'status', 'source_name', 'source_url',
-        'facebook', 'website', 'responsable', 'map_lat', 'map_lng', 'contract_date', 'contract_plan',
-        'bank_code', 'bank_name', 'bank_iban', 'bank_swift', 'bank_mandate', 'currency', 'payment_condition',
-        'balance_last_update', 'balance_count_expired', 'balance_count_unpaid', 'balance_total_unpaid', 'segsocial', 'cae',
-        'payment_note_email', 'establishment_license', 'quality_name', 'responsible_quality_function', 'quality_email',
-        'quality_phone', 'quality_mobile', 'commercial_name', 'responsible_commercial_function', 'commercial_email',
-        'commercial_phone', 'commercial_mobile', 'fiscal_name'
+        'name',
+        'email',
+        'address',
+        'phone',
+        'password'
     ];
 
     /**
@@ -66,7 +58,7 @@ class Customer extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
     ];
 
     /**
@@ -77,6 +69,8 @@ class Customer extends Authenticatable
     public $rules = [
         'name'      => 'required',
         'email'     => 'required',
+        'address'   => 'required',
+        'phone'     => 'required'
     ];
 
     /**
@@ -86,7 +80,9 @@ class Customer extends Authenticatable
      */
     protected $customAttributes = [
         'name'      => 'Nome',
-        'email'     => 'E-mail'
+        'email'     => 'E-mail',
+        'address'   => 'Morada',
+        'phone'     => 'Telefone'
     ];
 
 
@@ -150,25 +146,6 @@ class Customer extends Authenticatable
     }
 
 
-    /**
-     * Create tracking code
-     *
-     * @return string
-     */
-    public function setCode($save = false)
-    {
-        $totalCustomers = Customer::withTrashed()->where('code', 'like',  date('y') . '%')->count();
-        $totalCustomers++;
-
-        $code = date('y') . str_pad($totalCustomers, 3, "0", STR_PAD_LEFT);
-
-        if ($save) {
-            $this->code = $code;
-            $this->save();
-        }
-
-        return $code;
-    }
 
 
     /**
@@ -199,11 +176,10 @@ class Customer extends Authenticatable
      */
     public function nextId()
     {
-        return Customer::filterSource()
-            ->isProspect(false)
-            ->where('id', '>', $this->id)
+        return Customer::where('id', '>', $this->id)
             ->min('id');
     }
+
 
     /**
      * Return previous model ID
@@ -212,9 +188,7 @@ class Customer extends Authenticatable
      */
     public function previousId()
     {
-        return Customer::filterSource()
-            ->isProspect(false)
-            ->where('id', '<', $this->id)
+        return Customer::where('id', '<', $this->id)
             ->max('id');
     }
 
@@ -239,12 +213,12 @@ class Customer extends Authenticatable
     */
     public function manager()
     {
-        return $this->belongsTo('App\Models\User', 'manager_id');
+        return $this->belongsTo(User::class, 'manager_id');
     }
 
     public function orders()
     {
-        return $this->hasMany('App\Models\Order', 'customer_id');
+        return $this->hasMany(Order::class, 'customer_id');
     }
 
     /*
@@ -316,11 +290,6 @@ class Customer extends Authenticatable
     public function setContractDateAttribute($value)
     {
         $this->attributes['contract_date'] = empty($value) ? null : $value;
-    }
-
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = Hash::make($value);
     }
 
     public function setIpAttribute($value)

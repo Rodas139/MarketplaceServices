@@ -4,7 +4,7 @@
             <div class="wrap-login100 @if($errors->has('email')) animated shake @endif">
                 {{ Form::open(array('route' => 'admin.password.forgot.email', 'class' => 'login100-form validate-form')) }}
                 <span class="login100-form-title" style="padding-bottom: 48px">
-                    <img src="{{ asset('assets/img/logo/logo_sm.png') }}"/>
+                    <img src="{{ asset('assets/img/logo/logo_sm_.png') }}"/>
                 </span>
                 <div class="main-block">
                     @if (session('status'))
@@ -27,7 +27,7 @@
                         <div class="wrap-login100-form-btn">
                             <div class="login100-form-bgbtn"></div>
                             <button class="login100-form-btn">
-                                Recuperar Palavra-Passe
+                                Confirmar E-mail
                             </button>
                         </div>
                     </div>
@@ -38,21 +38,6 @@
                         <a href="{{ route('admin.login') }}" class="txt2">
                             Iniciar Sessão
                         </a>
-                    </div>
-                </div>
-
-                <div class="text-center submit-loading" style="padding-top: 0; line-height: 0; display: none">
-                    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                    <h4>Aguarde por-favor.</h4>
-                    <p>Estamos a enviar-lhe os dados de reposição.</p>
-                    <div style="margin-bottom: 30px"></div>
-                    <div class="container-login100-form-btn">
-                        <div class="wrap-login100-form-btn">
-                            <div class="login100-form-bgbtn"></div>
-                            <button class="login100-form-btn">
-                                A Enviar E-mail...
-                            </button>
-                        </div>
                     </div>
                 </div>
                 {{ Form::close() }}

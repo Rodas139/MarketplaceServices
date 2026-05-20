@@ -103,6 +103,7 @@ class ChatController extends \App\Http\Controllers\Account\Controller
 
         return view('account.chat.messages.messages', $data)->render();
     }
+    
 
     public function saveMessage(Request $request, $chat)
     {
@@ -163,13 +164,4 @@ class ChatController extends \App\Http\Controllers\Account\Controller
 
         return $response;
     }
-
-    // public function closeChat(Request $request, $chat)
-    // {
-    //     $chat = Chat::find($chat);
-    //     $chat->closed_in = Carbon::now()->format('Y-m-d H:i:s');
-    //     $chat->save();
-
-    //     return Redirect::route('account.orders.index')->with('success', 'Chat encerrado com sucesso');
-    // }
 }

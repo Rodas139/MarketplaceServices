@@ -95,6 +95,18 @@ class LoginController extends \App\Http\Controllers\Admin\Controller
         }
 
         if ($this->attemptLogin($request)) {
+            // Verificar se o utilizador está ativo
+            $user = $this->guard()->user();
+            if ($user && $user->status && $user->status !== 'active') {
+                // Se o utilizador não está ativo, fazer logout
+                $this->guard()->logout();
+                $this->incrementLoginAttempts($request);
+
+                throw ValidationException::withMessages([
+                    $this->username() => ['A sua conta não está ativa. Contacte o administrador.'],
+                ]);
+            }
+
             return $this->sendLoginResponse($request);
         }
 
@@ -170,7 +182,11 @@ class LoginController extends \App\Http\Controllers\Admin\Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        //
+        if ($user && method_exists($user, 'hasRole') && $user->hasRole('prestador')) {
+            return redirect()->route('provider.orders.index');
+        }
+
+        return null;
     }
 
     /**

@@ -12,7 +12,7 @@
 @endif
 
 <header class="main-header">
-    <a href="{{ route('admin.dashboard') }}" class="logo">
+    <a href="{{ Auth::user()->hasRole('prestador') ? route('provider.orders.index') : route('admin.dashboard') }}" class="logo">
         <span class="logo-mini">
             <img src="{{ asset(config('app.logo_square')) }}"
                 onerror="this.src = '{{ asset('assets/img/logo/logo_square_xs.png') }}'" />
@@ -50,6 +50,9 @@
                     </li>
                 @endif
 
+                {{-- NOTIFICATIONS --}}
+                @include('admin.notifications.bell')
+
                 {{-- USER ACCOUNT --}}
                 <!-- User Account Menu -->
                 <li class="dropdown user-menu">
@@ -74,6 +77,7 @@
                         </li>
                     </ul>
                 </li>
+
                 {{-- LANGUAGE
                 <li class="dropdown user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">

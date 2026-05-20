@@ -8,7 +8,9 @@
         <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <meta name="csrf-param" content="_token" />
+        <meta name="user-id" content="{{ auth()->id() }}" />
         @include('admin.partials.styles')
+        @vite(['resources/js/app.js'])
         @yield('styles')
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

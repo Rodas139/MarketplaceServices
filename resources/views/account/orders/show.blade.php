@@ -1,64 +1,120 @@
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">
-        <span class="fs-15" aria-hidden="true"><i class="fas fa-times"></i></span>
-        <span class="sr-only">{{trans('account/orders.close')}}</span>
-    </button>
-    <h4 class="modal-title">{{trans('account/orders.order')}} Nº {{$firstOrder->code}}</h4>
-</div>
+@section('title')
+    Detalhes do Pedido #{{ $order->id }}
+@stop
 
-<div class="tabbable-line m-b-15">
-    <ul class="nav nav-tabs" style="margin: 0%;">
-        <li class="{{ @$tab ? : 'active' }}">
-            <a href="#tab-details" data-toggle="tab">
-                {{trans('account/orders.details')}}
-            </a>
-        </li>
-        <li class="">
-            <a href="#tab-history_status" data-toggle="tab">
-                {{trans('account/orders.state-history')}}
-            </a>
-        </li>
-    </ul>
-</div>
+@section('account-content')
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header with-border" style="display: block; padding-left: 0;">
+                    <div style="margin-bottom: 10px; margin-left: 0; padding-left: 0;">
+                        <a href="{{ route('account.index') }}" class="btn btn-default btn-sm">
+                            <i class="fa fa-arrow-left"></i> Voltar
+                        </a>
+                        @if($order->status == 'accepted')
+                            <a href="{{ route('account.chat.conversation.show', $order) }}" class="btn btn-primary btn-sm">
+                                <i class="fa fa-comments"></i> Chat
+                            </a>
+                        @endif
+                    </div>
+                    <h3 class="box-title">Pedido Nº {{ $order->id }}</h3>
+                </div>
 
-<div class="modal-body p-t-0 p-b-0 modal-shipment modal-shipment-detail">
-    <div class="tab-content m-b-0" style="padding-bottom: 10px;">
-        <div class="tab-pane {{ @$tab ? '' : 'active' }}"  id="tab-details">
-            @include('account.orders.partials.show.details')
-        </div>
-        <div class="tab-pane" id="tab-history_status">
-            @include('account.orders.partials.show.history_status')
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 style="margin-bottom: 20px;"><strong>Informações do Pedido</strong></h4>
+                            <dl class="dl-horizontal">
+                                <dt>Nº Pedido:</dt>
+                                <dd>{{ $order->id }}</dd>
+
+                                <dt>Data:</dt>
+                                <dd>{{ \Carbon\Carbon::parse($order->date)->format('d/m/Y') }}</dd>
+
+                                <dt>Hora:</dt>
+                                <dd>{{ $order->hour ? $order->hour . ':00' : '-' }}</dd>
+
+                                <dt>Status:</dt>
+                                <dd>
+                                    <span class="label {{ $order->status == 'pending' ? 'label-warning' : ($order->status == 'declined' ? 'label-danger' : 'label-success') }}">
+                                        {{ \App\Helpers\OrderHelper::getStatusInPortuguese($order->status) }}
+                                    </span>
+                                </dd>
+
+                                <dt>Descrição:</dt>
+                                <dd>{{ $order->description ?? '-' }}</dd>
+                            </dl>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 style="margin-bottom: 20px;"><strong>Informações do Prestador</strong></h4>
+                            <dl class="dl-horizontal">
+                                <dt>Nome:</dt>
+                                <dd>{{ $order->user->name ?? 'N/A' }}</dd>
+
+                                @if($order->user && $order->user->service)
+                                    <dt>Serviço:</dt>
+                                    <dd>{{ $order->user->service->name ?? '-' }}</dd>
+
+                                    <dt>Preço/Hora:</dt>
+                                    <dd>€ {{ number_format($order->user->service->price, 2, ',', '.') }}</dd>
+
+                                    <dt>Preço Total:</dt>
+                                    <dd>€ {{ number_format($order->hour * $order->user->service->price, 2, ',', '.') }}</dd>
+                                @endif
+
+                                <dt>Email:</dt>
+                                <dd>{{ $order->user->email ?? '-' }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                @if($order->status == 'completed')
+                    <div class="box-footer" style="border-top: 1px solid #ddd; padding: 15px;">
+                        <h4 style="margin-bottom: 20px;"><strong>Deixar um Comentário</strong></h4>
+                        
+                        <form action="{{ route('account.orders.comment.store', $order) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+
+                            <div class="form-group">
+                                <label for="rating">Classificação (1-5 estrelas):</label>
+                                <select name="rating" id="rating" class="form-control @error('rating') is-invalid @enderror" required>
+                                    <option value="">Selecione uma classificação</option>
+                                    <option value="1" >1 - Muito Ruim</option>
+                                    <option value="2" >2 - Ruim</option>
+                                    <option value="3" >3 - Aceitável</option>
+                                    <option value="4" >4 - Bom</option>
+                                    <option value="5" >5 - Excelente</option>
+                                </select>
+                                @error('rating')
+                                    <span class="text-danger" style="font-size: 12px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comment">Comentário:</label>
+                                <textarea name="comment" id="comment" class="form-control @error('comment') is-invalid @enderror" rows="5" placeholder="Deixe o seu comentário..." required>{{ old('comment') }}</textarea>
+                                @error('comment')
+                                    <span class="text-danger" style="font-size: 12px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="image">Foto (opcional):</label>
+                                <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                                @error('image')
+                                    <span class="text-danger" style="font-size: 12px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-comment"></i> Enviar Comentário
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
-</div>
-
-<div class="modal-footer">
-    <div class="pull-right">
-        <button type="button" class="btn btn-default" data-dismiss="modal">{{trans('account/orders.close')}}</button>
-    </div>
-</div>
-
-
-<script>
-    $('.select2').select2(Init.select2());
-    $('.modal form.send-email-signature').on('submit', function(e){
-        e.preventDefault();
-
-        var $form = $(this);
-        var $button = $('button[type=submit]');
-
-        $button.button('loading');
-        $.post($form.attr('action'), $form.serialize(), function(data){
-            if(data.result) {
-                Growl.success(data.text);
-                $('#modal-remote-xs').modal('hide');
-            } else {
-                Growl.error(data.text);
-            }
-        }).fail(function () {
-            Growl.error500();
-        }).always(function(){
-            $button.button('reset');
-        })
-    });
-</script>
+@stop

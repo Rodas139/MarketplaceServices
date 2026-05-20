@@ -16,119 +16,46 @@ return new class extends Migration
      */
     public function up()
     {
+        if (!Schema::hasTable('categorys')) {
+            Schema::create('categorys', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+
+                $table->id();
+                $table->string('name')->nullable();
+                $table->string('description')->nullable();
+
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
         if (!Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->engine = 'InnoDB';
 
                 $table->id();
-                $table->string('source', 50)->nullable();
-                $table->string('code', 25)->nullable();
-                $table->string('code_abbrv', 6)->nullable();
+                $table->string('name')->nullable();
+                $table->string('email')->unique()->nullable(); 
+                $table->string('password')->nullable();
+                $table->enum('status', ['pending', 'active', 'inactive'])->default('pending')->nullable();
 
-                $table->string('name');
-                $table->string('fullname')->nullable();
-                $table->date('birthdate')->nullable()->format('Y/m/d')->nullable();
-                $table->enum('gender', ['m', 'f'])->nullable();
-                $table->string('nacionality')->nullable();
-                $table->text('about')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
 
-                $table->string('address')->nullable();
-                $table->string('zip_code')->nullable();
-                $table->string('city')->nullable();
-                $table->string('country')->nullable();
+        if (!Schema::hasTable('services')) {
+            Schema::create('services', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
 
-                $table->string('personal_email')->nullable();
-                $table->string('personal_phone', 15)->nullable();
-                $table->string('personal_mobile', 15)->nullable();
-
-                $table->string('professional_email')->nullable();
-                $table->string('professional_phone', 15)->nullable();
-                $table->string('professional_mobile', 15)->nullable();
-
-                $table->string('emergency_name')->nullable();
-                $table->string('emergency_kinship')->nullable();
-                $table->string('emergency_phone', 15)->nullable();
-                $table->string('emergency_mobile', 15)->nullable();
-
-                $table->string('id_card', 20)->nullable();
-                $table->string('ss_card', 20)->nullable();
-                $table->string('vat', 20)->nullable();
-
-                $table->string('facebook')->nullable();
-                $table->string('twitter')->nullable();
-                $table->string('linkedin')->nullable();
-
-                $table->unsignedBigInteger('agency_id')->nullable();
-                $table->unsignedBigInteger('provider_id')->nullable();
-                $table->unsignedBigInteger('professional_chief_id')->nullable();
-                $table->string('professional_role')->nullable();
-                $table->text('professional_obs')->nullable();
-                $table->date('admission_date')->format('Y/m/d')->nullable();
-
-                $table->string('bank_name')->nullable();
-                $table->string('bank_iban')->nullable();
-                $table->string('bank_swift', 30)->nullable();
-
-                $table->string('academic_degree')->nullable();
-                $table->string('teaching_institution')->nullable();
-                $table->string('course')->nullable();
-                $table->string('course_avaliation', 5)->nullable();
-
-                $table->string('fiscal_address')->nullable();
-                $table->string('fiscal_zip_code')->nullable();
-                $table->string('fiscal_city')->nullable();
-                $table->string('fiscal_country')->nullable();
-                $table->string('fiscal_deficiency', 20)->nullable();
-                $table->integer('fiscal_titularity')->nullable();
-                $table->integer('fiscal_dependents')->nullable();
-
-                $table->decimal('salary_price', 10, 2)->nullable();
-                $table->decimal('salary_value_hour', 10, 2)->nullable();
-                $table->decimal('salary_food_allowance', 10, 2)->nullable();
-                $table->decimal('salary_expenses', 10, 2)->nullable();
-                $table->integer('salary_working_time_exemption')->nullable();
-                $table->text('salary_obs')->nullable();
-
-                $table->string('phone')->nullable();
-                $table->string('mobile')->nullable();
-                $table->text('obs')->nullable();
-
-                $table->float('comission_percent', 10, 2)->nullable();
-                $table->enum('civil_status', ['single', 'married', 'union', 'divorced', 'widower'])->nullable();
-
-                $table->string('email')->unique();
-                $table->string('password');
-                $table->string('uncrypted_password')->nullable();
-
-                $table->timestamp('last_login')->nullable();
-                $table->integer('ip')->nullable();
-
-                $table->string('session_id')->nullable();
-                $table->string('filehost')->nullable();
-                $table->string('filepath')->nullable();
-                $table->string('filename')->nullable();
-
-                $table->tinyInteger('login_app');
-                $table->tinyInteger('active');
-
-                $table->string('allowed_actions')->nullable();
-                $table->rememberToken();
-                $table->string('api_token', 16)->nullable();
-
-                $table->tinyInteger('is_operator');
-                $table->tinyInteger('is_developer')->nullable();
-                $table->tinyInteger('login_admin')->nullable();
-
-                $table->tinyInteger('location_enabled');
-                $table->tinyInteger('location_denied');
-                $table->string('location_lat', 20)->nullable();
-                $table->string('location_lng', 20)->nullable();
-                $table->string('location_marker')->nullable();
-                $table->timestamp('location_last_update')->nullable();
-
-                $table->smallInteger('count_notices')->nullable();
-                $table->text('settings')->nullable();
-                $table->longText('popup_notification')->nullable();
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->foreign('user_id')->references('id')->on('users');
+                $table->unsignedBigInteger('category_id');
+                $table->foreign('category_id')->references('id')->on('categorys');
+                $table->string('name')->nullable();
+                $table->decimal('price', 10, 2)->nullable();
+                $table->enum('status', ['pending', 'active', 'inactive'])->default('pending');
 
                 $table->timestamps();
                 $table->softDeletes();
@@ -178,94 +105,11 @@ return new class extends Migration
                 $table->engine = 'InnoDB';
 
                 $table->id();
-                $table->string('source')->default(config('app.source'));
-                $table->string('code', 10)->nullable();
-
                 $table->string('name')->nullable();
-                $table->string('address')->nullable();
-                $table->string('zip_code')->nullable();
-                $table->string('city')->nullable();
-                $table->string('country', 4)->nullable();
-
-                $table->string('contact_email')->nullable();
-                $table->string('phone')->nullable();
-                $table->string('mobile')->nullable();
-                $table->string('website')->nullable();
-                $table->string('facebook')->nullable();
-
-                $table->string('vat', 20)->nullable();
-                $table->string('cae', 20)->nullable();
-                $table->string('segsocial', 20)->nullable();
-
-                $table->string('billing_code', 10)->nullable();
-                $table->string('billing_name')->nullable();
-                $table->string('billing_address')->nullable();
-                $table->string('billing_zip_code')->nullable();
-                $table->string('billing_city')->nullable();
-                $table->string('billing_country')->nullable();
-                $table->string('billing_email')->nullable();
-
-                $table->string('payment_condition', 5)->nullable();
-                $table->string('currency', 5)->default('€');
-
-                $table->string('bank_code', 15)->nullable();
-                $table->string('bank_name')->nullable();
-                $table->string('bank_iban')->nullable();
-                $table->string('bank_swift')->nullable();
-                $table->string('bank_mandate', 25)->nullable();
-                $table->string('bank_description')->nullable();
-
-                $table->integer('balance_count_expired')->nullable();
-                $table->integer('balance_count_unpaid')->nullable();
-                $table->decimal('balance_total_unpaid', 10, 2)->nullable();
-                $table->timestamp('balance_last_update')->nullable();
-                $table->string('responsable')->nullable();
-
-                $table->integer('manager_id')->nullable();
-                $table->integer('server_id')->nullable();
-
-                $table->string('map_lat', 30)->nullable();
-                $table->string('map_lng', 30)->nullable();
-
-                $table->date('contract_date')->format('Y/m/d')->nullable();
-                $table->string('contract_plan', 30)->nullable();
-                $table->string('source_name', 50)->nullable();
-                $table->string('source_url')->nullable();
-                $table->tinyInteger('source_blocked')->default(0);
-
-                $table->integer('support_mins')->nullable();
-                $table->integer('support_periods')->nullable();
-                $table->decimal('support_price', 10, 2)->nullable();
-                $table->text('obs')->nullable();
-
-                $table->string('filepath')->nullable();
-                $table->string('filename')->nullable();
-                $table->string('display_name')->nullable();
                 $table->string('email')->unique()->nullable();
+                $table->string('address')->nullable();
+                $table->string('phone', 9)->nullable();
                 $table->string('password')->nullable();
-                $table->string('remember_token')->nullable();
-
-                $table->timestamp('last_login')->nullable();
-                $table->integer('ip')->nullable();
-                $table->tinyInteger('is_prospect')->default(0);
-                $table->tinyInteger('is_particular')->default(0);
-                $table->tinyInteger('is_active')->default(1);
-                $table->tinyInteger('license_active')->default(1);
-                $table->string(column: 'current_lang')->default('pt');
-
-                $table->string('payment_note_email', 255)->nullable();
-                $table->string('establishment_license', 255)->nullable();
-                $table->string('quality_name', 255)->nullable();
-                $table->string('responsible_quality_function', 255)->nullable();
-                $table->string('quality_email', 255)->nullable();
-                $table->string('quality_phone', 255)->nullable();
-                $table->string('quality_mobile', 255)->nullable();
-                $table->string('commercial_name', 255)->nullable();
-                $table->string('responsible_commercial_function', 255)->nullable();
-                $table->string('commercial_email', 255)->nullable();
-                $table->string('commercial_phone', 255)->nullable();
-                $table->string('commercial_mobile', 255)->nullable();
-                $table->string('fiscal_name', 255)->nullable();
 
                 $table->timestamps();
                 $table->softDeletes();
@@ -321,16 +165,17 @@ return new class extends Migration
                 $table->engine = 'InnoDB';
 
                 $table->id();
-                $table->timestamp('alert_at');
-                $table->tinyInteger('read')->default(0);
-                $table->unsignedInteger('sender')->nullable();
-                $table->unsignedInteger('recipient');
-                $table->string('type');
-                $table->string('params');
-                $table->string('title')->nullable();
-                $table->string('message');
-                $table->string('source_class');
-                $table->integer('source_id');
+                $table->unsignedBigInteger('sender_id')->nullable();
+                $table->foreign('sender_id')->references('id')->on('users')->onDelete('set null');
+                $table->string('title');
+                $table->text('message');
+                $table->string('type')->default('info');
+                $table->string('source_class')->nullable();
+                $table->integer('source_id')->nullable();
+                $table->string('params')->nullable();
+                $table->json('read_by_admin')->nullable();
+                $table->json('read_by_customer')->nullable();
+                $table->timestamp('alert_at')->useCurrent();
                 $table->timestamps();
                 $table->softDeletes();
             });
@@ -353,6 +198,123 @@ return new class extends Migration
                 $table->softDeletes();
             });
         }
+
+
+        if (!Schema::hasTable('orders')) {
+            Schema::create('orders', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+
+                $table->id();
+                $table->unsignedBigInteger('id_customer');
+                $table->foreign('id_customer')->references('id')->on('customers');
+                $table->unsignedBigInteger('user_id');
+                $table->foreign('user_id')->references('id')->on('users');
+                $table->unsignedBigInteger('service_id')->nullable();
+                $table->foreign('service_id')->references('id')->on('services')->onDelete('set null');
+                $table->integer('hour')->nullable();
+                $table->date('date')->nullable();
+                $table->string('description')->nullable();
+                $table->enum('status', ['pending', 'accepted', 'declined', 'completed'])->default('pending');
+                
+
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        if (!Schema::hasTable('payments')) {
+            Schema::create('payments', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+
+                $table->id();
+                $table->unsignedBigInteger('id_order');
+                $table->foreign('id_order')->references('id')->on('orders');
+                $table->string('method')->nullable();
+                $table->integer('total')->nullable();
+                $table->enum('status', ['pending', 'paid'])->default('pending');
+                
+
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        if (!Schema::hasTable('comissions')) {
+            Schema::create('comissions', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+
+                $table->id();
+                $table->unsignedBigInteger('id_payment');
+                $table->foreign('id_payment')->references('id')->on('payments');
+                $table->decimal('value', 10, 2)->nullable();
+                $table->decimal('gain', 10, 2)->nullable();
+                
+
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        if (!Schema::hasTable('comments')) {
+            Schema::create('comments', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+
+                $table->id();
+                $table->unsignedBigInteger('id_customer');
+                $table->foreign('id_customer')->references('id')->on('customers');
+                $table->unsignedBigInteger('id_order');
+                $table->foreign('id_order')->references('id')->on('orders');
+                $table->text('comment')->nullable();
+                $table->string('image')->nullable();
+                $table->integer('rating')->nullable();
+
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+                
+        if (!Schema::hasTable('chats')) {
+            Schema::create('chats', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+                $table->id();
+                $table->unsignedBigInteger('customer_id');
+                $table->unsignedBigInteger('provider_id');
+                $table->unsignedBigInteger('order_id')->nullable();
+                $table->string('subject')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+
+                $table->index('customer_id');
+                $table->index('provider_id');
+                $table->index('order_id');
+
+                $table->foreign('customer_id')->references('id')->on('customers');
+                $table->foreign('provider_id')->references('id')->on('users');
+                $table->foreign('order_id')->references('id')->on('orders');
+            });
+
+        }
+
+        if (!Schema::hasTable('chat_messages')) {
+            Schema::create('chat_messages', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('chat_id');
+                $table->enum('sender_type', ['customer', 'provider']);
+                $table->unsignedBigInteger('sender_id');
+                $table->text('message');
+                $table->timestamps();
+                $table->softDeletes();
+
+                $table->index('chat_id');
+                $table->index(['sender_type', 'sender_id']);
+
+                $table->foreign('chat_id')
+                    ->references('id')
+                    ->on('chats')
+                    ->onDelete('cascade');
+            });
+        }
     }
 
     /**
@@ -362,6 +324,10 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('comissions');
+        Schema::dropIfExists('payments');
+        Schema::dropIfExists('comments');
+        Schema::dropIfExists('orders');
         Schema::dropIfExists('change_logs');
         Schema::dropIfExists('servers');
         Schema::dropIfExists('notifications');
@@ -372,5 +338,9 @@ return new class extends Migration
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('password_resets');
         Schema::dropIfExists('users');
+        Schema::dropIfExists('categorys');
+        Schema::dropIfExists('services');
+        Schema::dropIfExists('chats');
+        Schema::dropIfExists('chat_messages');
     }
 };

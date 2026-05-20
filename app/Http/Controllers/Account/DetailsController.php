@@ -7,9 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Customer;
-use App\Models\CustomerType;
-use Croppa;
+use App\Services\CustomerService;
 
 class DetailsController extends \App\Http\Controllers\Controller
 {
@@ -32,7 +30,7 @@ class DetailsController extends \App\Http\Controllers\Controller
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(private CustomerService $customerService)
     {
     }
     
@@ -58,14 +56,12 @@ class DetailsController extends \App\Http\Controllers\Controller
         
         $customer = Auth::guard('customer')->user();
 
-        if ($customer->validate($input)) {
-            $customer->fill($input);
-            $customer->save();
-
+        try {
+            $this->customerService->updateAccountDetails($customer, $input);
             return Redirect::back()->with('success', 'Dados alterados com sucesso.');
+        } catch (\Exception $e) {
+            return Redirect::back()->withInput()->with('error', $e->getMessage());
         }
-        
-        return Redirect::back()->withInput()->with('error', $customer->errors()->first());
     }
     
     /**
@@ -87,28 +83,12 @@ class DetailsController extends \App\Http\Controllers\Controller
         $validator = Validator::make($input, $rules);
         
         if ($validator->passes()) {
-            $customer->fill($input);
-            
-            if ($input['delete_photo'] && !empty($customer->filepath)) {
-                Croppa::delete($customer->filepath);
-                $customer->filepath = null;
-                $customer->filename = null;
+            try {
+                $this->customerService->updateAccountLogin($customer, $request, $input);
+                return Redirect::back()->with('success', 'Dados de login atualizados com sucesso.');
+            } catch (\Exception $e) {
+                return Redirect::back()->withInput()->with('error', $this->mapLoginUpdateError($e));
             }
-            
-            if($request->hasFile('image')) {
-                if ($customer->exists && !empty($customer->filepath)) {
-                    Croppa::delete($customer->filepath);
-                }
-
-                if (!$customer->upload($request->file('image'))) {
-                    return Redirect::back()->withInput()->with('error', 'Não foi possível alterar a imagem do perfil.');
-                }
-                
-            } else {
-                $customer->save();
-            }
-            
-            return Redirect::back()->with('success', 'Dados de login atualizados com sucesso.');
         }
         
         return Redirect::back()->with('error', $validator->errors()->first());
@@ -135,12 +115,27 @@ class DetailsController extends \App\Http\Controllers\Controller
         $validator = Validator::make($input, $rules);
         
         if ($validator->passes()) {
-            $customer->password = $input['password'];
-            $customer->save();
+            $this->customerService->updateAccountPassword($customer, $input['password']);
         
             return Redirect::back()->with('success', 'Palavra-passe alterada com sucesso.');
         }
         
         return Redirect::back()->with('error', $validator->errors()->first());
+    }
+
+    /**
+     * Translate service errors for login update.
+     *
+     * @param \Exception $exception
+     * @return string
+     */
+    private function mapLoginUpdateError(\Exception $exception)
+    {
+        switch ($exception->getMessage()) {
+            case 'image_upload_failed':
+                return 'Não foi possível alterar a imagem do perfil.';
+            default:
+                return $exception->getMessage();
+        }
     }
 }

@@ -3,131 +3,63 @@
 namespace App\Http\Controllers\Account\Orders;
 
 use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\Customer;
+use App\Services\OrderService;
 use Auth;
 use Illuminate\Http\Request;
-use Response;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Mail;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
-use Date, DB, Setting, Log, DateTime;
 
 class OrdersController extends \App\Http\Controllers\Account\Controller
 {
-    protected $menuOption = 'orders';
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct(private OrderService $orderService)
+    {
+    }
 
     /**
+     * Display a listing of the resource.
+     * 
      * @param Request $request
+     * @return type
      */
     public function index(Request $request)
     {
-        $status = OrderStatus::remember(config('cache.query_ttl'))
-            ->cacheTags(OrderStatus::CACHE_TAG)
-            ->where('is_active', 1)
-            ->pluck('name', 'id')
-            ->toArray();
+        $customer = Auth::guard('customer')->user();
+        $orders = $this->orderService->getCustomerOrders($customer->id, $request);
 
-        $data = compact(
-            'status'
-        );
+        $data = compact('orders');
 
         return $this->setContent('account.orders.index', $data);
     }
 
     /**
-     * SHOW INFO OF ORDER
+     * Show order details
      *
+     * @param Request $request
      * @return type
      */
     public function show(Request $request, Order $order)
     {
-        $orders = Order::where('serie_code', $order->serie_code)
-            ->where('code', $order->code)
-            ->with('customer')
-            ->with('status_history')
-            ->orderBy('id', 'asc')
-            ->get();
+        $order = $this->orderService->getCustomerOrderDetails($order);
 
-        $firstOrder = $orders->first();
+        $data = compact('order');
 
-
-        $data = compact(
-            'orders',
-            'firstOrder'
-        );
-
-        return view('account.orders.show', $data)->render();
+        return $this->setContent('account.orders.show', $data);
     }
 
     /**
+     * Display a listing of the resource.
+     * 
      * @param Request $request
      * @return DataTables
      */
     public function datatable(Request $request)
     {
-        /** @var \App\Models\Order */
-        $user = Auth::guard('customer')->user()->id;
-
-        $data = Order::where('customer_id', $user)
-            ->with('status')
-            ->with('chat')->when($request->has('unread_messages') && $request->unread_messages == 1, function ($query) {
-                $query->whereHas('chat.messages', function ($query) {
-                    $query->where('message_customer', 0)
-                        ->where('date', '>', DB::raw('chats.customer_last_time_open'));
-                });
-            });
-
-
-        //filter date registration
-        $registrationDateMin = $request->get('registration_date_min');
-        if ($request->has('registration_date_min') && !empty($request->get('registration_date_min'))) {
-            $registrationDateMax = $registrationDateMin;
-
-            if ($request->has('registration_date_max') && !empty($request->get('registration_date_max'))) {
-                $registrationDateMax = $request->get('registration_date_max');
-            }
-
-            $registrationDateMin = $registrationDateMin . ' 00:00:00';
-            $registrationDateMax = $registrationDateMax . ' 23:59:59';
-            $data->whereBetween('registration_date', [$registrationDateMin, $registrationDateMax]);
-        }
-
-        //filter date delivery
-        $deliveryDateMin = $request->get('delivery_date_min');
-        if ($request->has('delivery_date_min') && !empty($request->get('delivery_date_min'))) {
-            $deliveryDateMax = $deliveryDateMin;
-
-            if ($request->has('delivery_date_max') && !empty($request->get('delivery_date_max'))) {
-                $deliveryDateMax = $request->get('delivery_date_max');
-            }
-
-            $deliveryDateMin = $deliveryDateMin . ' 00:00:00';
-            $deliveryDateMax = $deliveryDateMax . ' 23:59:59';
-            $data->whereBetween('delivery_date', [$deliveryDateMin, $deliveryDateMax]);
-        }
-
-        //filter status
-        $value = $request->get('status');
-        if ($request->has('status') && $request->get('status') != '') {
-            $data = $data->where('status_id', $value);
-        }
-
-        //filter approved by customer
-        $value = $request->approved_by_customer;
-        if ($request->has('approved_by_customer') && $request->approved_by_customer != "") {
-            $data = $data->where('approved_by_customer', $value);
-        }
-
-        $data = $data->groupby('code');
-        $data = $data->orderBy('code','desc');
+        $userId = Auth::guard('customer')->user()->id;
+        $data = $this->orderService->getCustomerOrdersDatatableQuery($userId, $request);
 
         return DataTables::of($data)
             ->addColumn('select', function ($row) {
@@ -163,151 +95,126 @@ class OrdersController extends \App\Http\Controllers\Account\Controller
             ->make(true);
     }
 
-
     /**
-     * Customer approve order
-     *
-     * @return redirect
+     * Show form to create new order
+     * 
+     * @param Request $request
+      * @return type
      */
-    public function approve(Request $request, $order)
+    public function create()
     {
-        $order = Order::find($order);
-        $order->status_id = OrderStatus::ACCEPTED_CUSTOMER;
-        $order->approved_by_customer = 1;
-        $order->save();
-
-        Order::where('code', $order->code)
-            ->update([
-                'status_id' =>  OrderStatus::ACCEPTED_CUSTOMER,
-                'approved_by_customer' => 1
-        ]);
-
-        $emails[] = 'portal@projetoBase.pt';
-
-        if (!empty($order->customer->manager)) {
-            if (!empty($order->customer->manager->email)) {
-                $emails[] = $order->customer->manager->email;
-            }
-        }
-
-        $emails = validateNotificationEmails($emails);
-
-        $customerName = Customer::where('id', Auth::guard('customer')->user()->id)->value('name');
-        if (!empty($emails['valid'])) {
-            try {
-                Mail::send('emails.orders.approved_by_customer', compact('order','customerName'), function ($message) use ($emails) {
-                    $message->to($emails['valid'])
-                        ->from(env('MAIL_FROM'), env('MAIL_FROM_NAME'))
-                        ->subject('Notificação: Encomenda Aprovada');
-                });
-            } catch (\Exception $e) {
-            }
-        }
-
-        return Redirect::back()->with('success', 'Encomenda aprovada com sucesso');
+        $customer = Auth::guard('customer')->user();
+        $categories = \App\Models\Category::select('id', 'name')->get();
+        $data = compact('customer', 'categories');
+        return $this->setContent('account.orders.create', $data);
     }
 
     /**
-     * Customer approve line order
-     *
-     * @return redirect
+     * Store new order
+     * 
+     * @param Request $request
+      * @return type
      */
-    public function lineApprove(Request $request, $id)
+    public function store(Request $request)
     {
-        $line = Order::find($id);
-        $line->line_accept_by_customer = 1;
-        $line->save();
-
-        $orders = Order::where('code',$line->code)->get();
-        $customerApproveOrder = 1;
-        foreach($orders as $order){
-            if($order->line_accept_by_customer != 1){
-                $customerApproveOrder = 0;
-            }
-        }
-
-        if($customerApproveOrder){
-            $request = new Request();
-            $this->approve($request,$id);
-        }else{
-            $emails = [];
-            $emails[] = 'portal@projetoBase.pt';
-            if (!empty($line->customer->manager)) {
-                if (!empty($line->customer->manager->email)) {
-                    $emails[] = $line->customer->manager->email;
-                }
-            }
-
-            //SEND EMAIL
-            $emails = validateNotificationEmails($emails);
-
-            if (!empty($emails['valid'])) {
-                try {
-                    Mail::send('emails.orders.line_approved', compact('line'), function ($message) use ($emails, $line) {
-                        $message->to($emails['valid'])
-                            ->from(env('MAIL_FROM'), env('MAIL_FROM_NAME'))
-                            ->subject('Maquete Aprovada - ' . $line->code);
-                    });
-
-                    $emailFeedback = 'Email enviado com sucesso. ';
-                } catch (\Exception $e) {
-                    dd($e->getMessage());
-                    $emailFeedback = 'Não foi possível enviar o Email. ';
-                }
-            }
-        }    
-        
-        return response()->json([
-            'result' => true,
-            'text' => 'Aprovado com sucesso',
-            'lineId' => $id,
+        $request->validate([
+            'category_id' => 'required|exists:categorys,id',
+            'service_id' => 'required|exists:services,id',
+            'user_id' => 'required|exists:users,id',
+            'date' => 'required|date',
+            'hour' => 'nullable|integer|between:0,23',
+            'description' => 'nullable|string'
+        ], [
+            'category_id.required' => 'A categoria é obrigatória.',
+            'category_id.exists' => 'A categoria selecionada é inválida.',
+            'service_id.required' => 'O serviço é obrigatório.',
+            'service_id.exists' => 'O serviço selecionado é inválido.',
+            'user_id.required' => 'O prestador é obrigatório.',
+            'user_id.exists' => 'O prestador selecionado é inválido.',
+            'date.required' => 'A data do pedido é obrigatória.',
+            'date.date' => 'A data deve ser uma data válida.',
+            'hour.integer' => 'As horas devem ser um número.',
+            'hour.between' => 'As horas devem estar entre 0 e 23.',
+            'description.string' => 'A descrição deve ser um texto válido.'
         ]);
+
+        try {
+            $customerId = Auth::guard('customer')->user()->id;
+            $order = $this->orderService->createCustomerOrder($request, $customerId);
+            return redirect()->route('account.orders.show', $order)->with('success', 'Pedido criado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->withErrors($this->mapCreateOrderError($e));
+        }
     }
 
+    /**
+     * Store comment for completed order
+     * 
+     * @param Request $request
+      * @return type
+      */
+    public function storeComment(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'comment' => 'required|string|min:5',
+            'rating' => 'required|integer|min:1|max:5',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'comment.required' => 'O comentário é obrigatório',
+            'comment.min' => 'O comentário deve ter no mínimo 5 caracteres',
+            'rating.required' => 'A classificação é obrigatória',
+            'rating.integer' => 'A classificação deve ser um número',
+            'rating.min' => 'A classificação deve ser entre 1 e 5',
+            'rating.max' => 'A classificação deve ser entre 1 e 5',
+            'image.image' => 'O ficheiro deve ser uma imagem',
+            'image.mimes' => 'O ficheiro deve ser JPEG, PNG, JPG ou GIF',
+            'image.max' => 'A imagem não pode ultrapassar 2MB'
+        ]);
+
+        try {
+            $customerId = Auth::guard('customer')->user()->id;
+            $this->orderService->addCustomerComment($request, $order, $customerId, $validated);
+            return redirect()->route('account.orders.show', $order)->with('success', 'Comentário deixado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($this->mapCommentError($e, $order));
+        }
+    }
 
     /**
-     * Customer refuse line order
+     * Translate service errors for create order.
      *
-     * @return redirect
+     * @param \Exception $exception
+     * @return string
      */
-    public function lineRefuse(Request $request, $id)
+    private function mapCreateOrderError(\Exception $exception)
     {
-        $line = Order::find($id);
-        $line->line_reject_by_customer = 1;
-        $line->save();
-
-        //enviar email para portal.projetoBase e para o gestor
-        $emails = [];
-        $emails[] = 'portal@projetoBase.pt';
-        if (!empty($line->customer->manager)) {
-            if (!empty($line->customer->manager->email)) {
-                $emails[] = $line->customer->manager->email;
-            }
+        switch ($exception->getMessage()) {
+            case 'user_or_service_missing':
+                return 'Prestador ou serviço selecionado não encontrado.';
+            case 'service_mismatch':
+                return 'O prestador selecionado não oferece este serviço.';
+            default:
+                return 'Erro ao criar o pedido: ' . $exception->getMessage();
         }
+    }
 
-        //SEND EMAIL
-        $emails = validateNotificationEmails($emails);
-
-        if (!empty($emails['valid'])) {
-            try {
-                Mail::send('emails.orders.line_refused', compact('line'), function ($message) use ($emails, $line) {
-                    $message->to($emails['valid'])
-                        ->from(env('MAIL_FROM'), env('MAIL_FROM_NAME'))
-                        ->subject('Maquete Recusada - ' . $line->code);
-                });
-
-                $emailFeedback = 'Email enviado com sucesso. ';
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-                $emailFeedback = 'Não foi possível enviar o Email. ';
-            }
+    /**
+     * Translate service errors for comments.
+     *
+     * @param \Exception $exception
+     * @param Order $order
+     * @return string
+     */
+    private function mapCommentError(\Exception $exception, Order $order)
+    {
+        switch ($exception->getMessage()) {
+            case 'comment_unauthorized':
+                return 'Não tem permissão para comentar neste pedido.';
+            case 'comment_not_completed':
+                return 'Só é possível comentar em pedidos completados. Status atual: ' . $order->status;
+            default:
+                return 'Erro ao guardar o comentário: ' . $exception->getMessage();
         }
-
-        return response()->json([
-            'result' => true,
-            'text' => 'Recusado com sucesso',
-            'lineId' => $id,
-        ]);
     }
     
 }

@@ -30,53 +30,15 @@ class LoginLog extends BaseModel
         'source', 'target', 'user_id', 'success', 'ip', 'remember'
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    |
-    | Define current model relationships
-    */
     public function user()
     {
-        return $this->belongsTo('App\Models\User', 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function customer()
     {
-        return $this->belongsTo('App\Models\Customer', 'user_id');
+        return $this->belongsTo(Customer::class, 'user_id');
     }
-    
-    /*
-    |--------------------------------------------------------------------------
-    | Accessors & Mutators
-    |--------------------------------------------------------------------------
-    |
-    | Eloquent provides a convenient way to transform your model attributes when 
-    | getting or setting them. Simply define a 'getFooAttribute' method on your model 
-    | to declare an accessor. Keep in mind that the methods should follow camel-casing, 
-    | even though your database columns are snake-case.
-    |
-    */
-   /* public function setIpAttribute($value)
-    {
-        $this->attributes['ip'] = ip2long($value);
-    }
-
-    public function getIpAttribute($value)
-    {
-        return long2ip($value);
-    }*/
-    
-   /*
-    |--------------------------------------------------------------------------
-    | Scopes
-    |--------------------------------------------------------------------------
-    |
-    | Scopes allow you to easily re-use query logic in your models.
-    | To define a scope, simply prefix a model method with scope.
-    |
-    */
     
     public function scopeFilterSource($query) {
         return $query->where('source', env('APP_SOURCE'));

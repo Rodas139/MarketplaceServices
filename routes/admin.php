@@ -31,6 +31,18 @@ Route::prefix('admin/login')
             ->name('admin.login.submit');
     });
 
+Route::prefix('admin/register')
+    ->middleware('guest.admin')
+    ->controller(Admin\Auth\RegisterController::class)
+    ->group(function () {
+
+        Route::get('/', 'index')
+            ->name('admin.register');
+
+        Route::post('/', 'store')
+            ->name('admin.register.store');
+    });
+
 //RESET PASSWORD
 Route::prefix('admin/password')->middleware('guest.admin')->group(function () {
 
@@ -57,7 +69,7 @@ Route::get('admin/logout', [Admin\Auth\LoginController::class, 'logout'])
  * Admin application routes
  *
  */
-Route::prefix('admin')->middleware('auth.admin')->group(function () {
+Route::prefix('admin')->middleware(['auth.admin', 'role:administrator'])->group(function () {
 
     Route::get('/', [Admin\HomeController::class, 'index'])
         ->name('admin.dashboard');
@@ -86,17 +98,12 @@ Route::prefix('admin')->middleware('auth.admin')->group(function () {
     Route::put('users/{user}/update/login', [Admin\Users\UsersController::class, 'updateLogin'])
         ->name('admin.users.update.login');
 
+    Route::put('users/{user}/status/{status}', [Admin\Users\UsersController::class, 'updateStatus'])
+        ->name('admin.users.updateStatus');
+
     Route::resource('users', Admin\Users\UsersController::class, [
         'as' => 'admin',
         'except' => ['show']
-    ]);
-
-    /*=================================================================================================================
-    * ROLES & PERMISSIONS
-    * =================================================================================================================*/
-    Route::resource('roles', Admin\RolesController::class, [
-        'as' => 'admin',
-        'except' => ['create', 'edit']
     ]);
 
     /*=================================================================================================================
@@ -144,37 +151,129 @@ Route::prefix('admin')->middleware('auth.admin')->group(function () {
     Route::post('customers/selected/destroy', [Admin\Customers\CustomersController::class, 'massDestroy'])
         ->name('admin.customers.selected.destroy');
 
-    Route::put('customers/{customer}/update/login', [Admin\Customers\CustomersController::class, 'updateLogin'])
-        ->name('admin.customers.login');
-
     Route::post('customers/{customer}/remote-login', [Admin\Customers\CustomersController::class, 'remoteLogin'])
         ->name('admin.customers.remote-login');
 
-    Route::post('customers/{id}/inactivate', [Admin\Customers\CustomersController::class, 'inactivate'])
-        ->name('admin.customers.inactivate');
-
-    Route::post('customers/{id}/activate', [Admin\Customers\CustomersController::class, 'activate'])
-        ->name('admin.customers.activate');
-
-    Route::post('customers/get/counties', [Admin\Customers\CustomersController::class, 'getCounties'])
-        ->name('admin.customers.get.counties');
-
-    Route::get('customers/{customer}/license/notify/preview', [Admin\Customers\CustomersController::class, 'notifyPreview'])
-        ->name('admin.customers.license.notify.preview');
-
-    Route::post('customers/{customer}/license/notify', [Admin\Customers\CustomersController::class, 'notifyPlatform'])
-        ->name('admin.customers.license.notify');
-
-    Route::post('customers/{customer}/balance/datatable', [Admin\Customers\CustomersController::class, 'datatableBalance'])
-        ->name('admin.customers.balance.datatable');
-
-    Route::post('customers/{customer}/balance/reset', [Admin\Customers\CustomersController::class, 'resetBalance'])
-        ->name('admin.customers.balance.reset');
-
-    Route::post('customers/search', [Admin\Customers\CustomersController::class, 'search'])
-        ->name('admin.customers.search');
-
     Route::resource('customers', Admin\Customers\CustomersController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * SERVICES
+    * =================================================================================================================*/
+    Route::post('services/datatable', [Admin\Services\ServicesController::class, 'datatable'])
+        ->name('admin.services.datatable');
+
+    Route::post('services/selected/destroy', [Admin\Services\ServicesController::class, 'massDestroy'])
+        ->name('admin.services.selected.destroy');
+
+    Route::put('services/{service}/status/{status}', [Admin\Services\ServicesController::class, 'updateStatus'])
+        ->name('admin.services.updateStatus');
+
+    Route::resource('services', Admin\Services\ServicesController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * COMMENTS 
+    * =================================================================================================================*/
+    Route::post('comments/datatable', [Admin\Comments\CommentsController::class, 'datatable'])
+        ->name('admin.comments.datatable');
+
+    Route::post('comments/selected/destroy', [Admin\Comments\CommentsController::class, 'massDestroy'])
+        ->name('admin.comments.selected.destroy');
+
+    Route::resource('comments', Admin\Comments\CommentsController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * CHATS
+    * =================================================================================================================*/
+    Route::post('chats/datatable', [Admin\Chats\ChatsController::class, 'datatable'])
+        ->name('admin.chats.datatable');
+
+    Route::post('chats/selected/destroy', [Admin\Chats\ChatsController::class, 'massDestroy'])
+        ->name('admin.chats.selected.destroy');
+
+    Route::resource('chats', Admin\Chats\ChatsController::class, [
+        'as' => 'admin',
+        'only' => ['index', 'destroy']
+    ]);
+
+    /*=================================================================================================================
+    * PEDIDOS
+    * =================================================================================================================*/
+    Route::post('orders/datatable', [Admin\Orders\OrdersController::class, 'datatable'])
+        ->name('admin.orders.datatable');
+
+    Route::post('orders/selected/destroy', [Admin\Orders\OrdersController::class, 'massDestroy'])
+        ->name('admin.orders.selected.destroy');
+
+    Route::put('orders/{order}/status/{status}', [Admin\Orders\OrdersController::class, 'updateStatus'])
+        ->name('admin.orders.updateStatus');
+
+    Route::resource('orders', Admin\Orders\OrdersController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * PRESTADOR
+    * =================================================================================================================*/
+    Route::get('prestador/pedidos', [Admin\Orders\OrdersController::class, 'prestadorPedidos'])
+        ->name('admin.prestador.pedidos');
+
+    /*=================================================================================================================
+    * PAYMENTS
+    * =================================================================================================================*/
+    Route::post('payments/datatable', [Admin\Payments\PaymentsController::class, 'datatable'])
+        ->name('admin.payments.datatable');
+
+    Route::post('payments/selected/destroy', [Admin\Payments\PaymentsController::class, 'massDestroy'])
+        ->name('admin.payments.selected.destroy');
+
+    Route::put('payments/{payment}/status/{status}', [Admin\Payments\PaymentsController::class, 'updateStatus'])
+        ->name('admin.payments.updateStatus');
+
+    Route::get('payments/get/order-data/{order}', [Admin\Payments\PaymentsController::class, 'getOrderData'])
+        ->name('admin.payments.get.order.data');
+
+    Route::resource('payments', Admin\Payments\PaymentsController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * COMISSIONS
+    * =================================================================================================================*/
+    Route::post('comissions/datatable', [Admin\Comissions\ComissionsController::class, 'datatable'])
+        ->name('admin.comissions.datatable');
+
+    Route::post('comissions/selected/destroy', [Admin\Comissions\ComissionsController::class, 'massDestroy'])
+        ->name('admin.comissions.selected.destroy');
+
+    Route::get('comissions/get/payment-data/{payment}', [Admin\Comissions\ComissionsController::class, 'getPaymentData'])
+        ->name('admin.comissions.get.payment.data');
+
+    Route::resource('comissions', Admin\Comissions\ComissionsController::class, [
+        'as' => 'admin',
+        'except' => ['show']
+    ]);
+
+    /*=================================================================================================================
+    * CATEGORYS
+    * =================================================================================================================*/
+    Route::post('categorys/datatable', [Admin\Categorys\CategorysController::class, 'datatable'])
+        ->name('admin.categorys.datatable');
+
+    Route::post('categorys/selected/destroy', [Admin\Categorys\CategorysController::class, 'massDestroy'])
+        ->name('admin.categorys.selected.destroy');
+
+    Route::resource('categorys', Admin\Categorys\CategorysController::class, [
         'as' => 'admin',
         'except' => ['show']
     ]);
@@ -188,6 +287,37 @@ Route::prefix('admin')->middleware('auth.admin')->group(function () {
     Route::post('logs/errors/destroy/all', [Admin\LogViewerController::class, 'destroyAll'])
         ->name('admin.logs.errors.destroy.all');
 
+    /*=================================================================================================================
+    * NOTIFICATIONS
+    * =================================================================================================================*/
+    Route::post('notifications/datatable', [Admin\Notifications\NotificationsController::class, 'datatable'])
+        ->name('admin.notifications.datatable');
+    Route::post('notifications/mass-destroy', [Admin\Notifications\NotificationsController::class, 'massDestroy'])
+        ->name('admin.notifications.mass-destroy');
+    Route::get('notifications/api/recent', [Admin\Notifications\NotificationsController::class, 'getRecent'])
+        ->name('admin.notifications.api.recent');
+    Route::post('notifications/api/mark-read', [Admin\Notifications\NotificationsController::class, 'markAsRead'])
+        ->name('admin.notifications.api.mark-read');
+    Route::get('notifications/api/type/{type}', [Admin\Notifications\NotificationsController::class, 'getByType'])
+        ->name('admin.notifications.api.by-type');
+    Route::get('notifications', [Admin\Notifications\NotificationsController::class, 'index'])
+        ->name('admin.notifications.index');
+    Route::get('notifications/create', [Admin\Notifications\NotificationsController::class, 'create'])
+        ->name('admin.notifications.create');
+    Route::post('notifications', [Admin\Notifications\NotificationsController::class, 'store'])
+        ->name('admin.notifications.store');
+    Route::get('notifications/{notification}', [Admin\Notifications\NotificationsController::class, 'show'])
+        ->name('admin.notifications.show');
+    Route::get('notifications/{notification}/edit', [Admin\Notifications\NotificationsController::class, 'edit'])
+        ->name('admin.notifications.edit');
+    Route::put('notifications/{notification}', [Admin\Notifications\NotificationsController::class, 'update'])
+        ->name('admin.notifications.update');
+    Route::delete('notifications/{notification}', [Admin\Notifications\NotificationsController::class, 'destroy'])
+        ->name('admin.notifications.destroy');
+
+    /*=================================================================================================================
+    * LOGS
+    * =================================================================================================================*/
     Route::resource('logs/errors', Admin\LogViewerController::class, [
         'as'    => 'admin.logs',
         'only'  => ['index', 'destroy']
@@ -215,4 +345,23 @@ Route::prefix('admin')->middleware('auth.admin')->group(function () {
     * =================================================================================================================*/
     Route::get('test', [Admin\TestController::class, 'index'])
         ->name('admin.test');
+
+    /*=================================================================================================================
+    * DEBUG ROUTE
+    * =================================================================================================================*/
+    Route::get('debug', function () {
+        $user = auth('admin')->user();
+        if (!$user) {
+            return "Não autenticado";
+        }
+        
+        $roles = $user->roles()->pluck('name')->toArray();
+        $hasRole = method_exists($user, 'hasRole');
+        
+        return "User: {$user->name}<br>
+                Email: {$user->email}<br>
+                Roles: " . json_encode($roles) . "<br>
+                hasRole method exists: " . ($hasRole ? "Sim" : "Não") . "<br>
+                hasRole('prestador'): " . ($hasRole && $user->hasRole('prestador') ? "Sim ✓" : "Não ✗");
+    })->name('admin.debug');
 });

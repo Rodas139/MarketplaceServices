@@ -35,9 +35,9 @@ class RolesSeeder extends Seeder
             'id' => 2
         ], [
             'source' => NULL,
-            'name' => 'chief',
+            'name' => 'prestador',
             'guard_name' => 'admin',
-            'display_name' => 'Gerencia',
+            'display_name' => 'Prestador',
             'description' => NULL,
             'color' => '#e41319',
             'sort' => NULL,
@@ -67,7 +67,61 @@ class RolesSeeder extends Seeder
             'name' => 'admin_users'
         ], [
             'guard_name' => 'admin',
-            'display_name' => 'Colaboradores',
+            'display_name' => 'Prestadores',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_services'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Serviços',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_orders'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Pedidos',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_payments'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Pagamentos',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_comissions'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Comissões',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_categorys'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Categorias',
+            'group' => 'Permissões',
+            'module' => 'base',
+            'description' => NULL
+        ]);
+        Permission::updateOrCreate([
+            'name' => 'admin_comments'
+        ], [
+            'guard_name' => 'admin',
+            'display_name' => 'Comentários',
             'group' => 'Permissões',
             'module' => 'base',
             'description' => NULL

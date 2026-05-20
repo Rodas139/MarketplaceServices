@@ -32,7 +32,7 @@
         {{ Html::style('/assets/css/helper.css') }}
         {{ Html::style('/assets/css/custom.css') }}
         {{ Html::style('/assets/css/default.css') }}
-        {{ Html::style('/assets/css/account.css') }}
+        {{ Html::style('/assets/css/account.css?v=1') }}
         {{ Html::style('/assets/admin/css/skins/' . app_skin() . '.css') }}
 
         @yield('styles')
@@ -68,15 +68,6 @@
                         </div>
                     </div> 
                      @endif --}}
-                </div>
-                <div class="row">
-                     @if($auth)
-                        <div class="col-xs-12 col-md-12 account-right-panel" @if ($auth) style="width: 100%;" @endif>
-                            <div class="col-xs-12 col-md-12 account-main-panel">
-                                @include('account.partials.side_img')
-                            </div>
-                        </div> 
-                     @endif 
                 </div>
             </div>
         </section>

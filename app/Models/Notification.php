@@ -28,7 +28,17 @@ class Notification extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'read', 'sender', 'recipient', 'message', 'alert_at', 'source_class', 'source_id'
+        'sender_id',
+        'title',
+        'message',
+        'type',
+        'source_class',
+        'source_id',
+        'params',
+        'read_by',
+        'read_by_admin',
+        'read_by_customer',
+        'alert_at'
     ];
 
     /**
@@ -37,7 +47,20 @@ class Notification extends BaseModel
      * @var array
      */
     protected $dates = [
-        'alert_at'
+        'alert_at',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
+    /**
+     * Casts
+     */
+    protected $casts = [
+        'params' => 'json',
+        'read_by' => 'array',
+        'read_by_admin' => 'array',
+        'read_by_customer' => 'array'
     ];
 
     /**
@@ -46,57 +69,33 @@ class Notification extends BaseModel
      * @var array
      */
     protected $rules = array(
-        'recipient'   => 'required',
-        'description' => 'required',
+        'title'   => 'required',
+        'message' => 'required',
     );
-
-    /**
-     * Set pusher notification
-     * @param $channel
-     */
-    public function setPusher($channel = null){
-
-        $data['id']      = 0; //agrupa as notificações
-        $data['title']   = $this->title ? $this->title : 'Notificação';
-        $data['message'] = $this->message;
-
-        if(!$channel) {
-            $channel = BroadcastPusher::getUserChannel();
-        }
-
-        $pusher = new BroadcastPusher();
-        return $pusher->trigger($data, $channel);
-    }
 
     /*
     |--------------------------------------------------------------------------
     | Relationships
     |--------------------------------------------------------------------------
-    |
-    | Define current model relationships
     */
-    public function recipient()
+    public function sender()
     {
-        return $this->belongsTo('App\Models\User', 'recipient');
+        return $this->belongsTo(User::class, 'sender_id');
     }
 
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
-    |
-    | Scopes allow you to easily re-use query logic in your models.
-    | To define a scope, simply prefix a model method with scope.
-    |
     */
-
-    public static function scopeFilterMyNotifications($query){
-        return $query->where('recipient', Auth::user()->id);
+    public function scopeRecent($query)
+    {
+        return $query->orderBy('alert_at', 'desc');
     }
 
-    public static function scopeExcludeScheduled($query){
-        return $query->whereNotNull('alert_at')
-                     ->whereRaw('alert_at <= NOW()');
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
     }
 
     public static function scopeUnread($query){
@@ -112,18 +111,6 @@ class Notification extends BaseModel
                      ->whereNotNull('alert_at')
                      ->whereRaw('DATE(alert_at) = TODAY()');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Accessors & Mutators
-    |--------------------------------------------------------------------------
-    |
-    | Eloquent provides a convenient way to transform your model attributes when
-    | getting or setting them. Simply define a 'getFooAttribute' method on your model
-    | to declare an accessor. Keep in mind that the methods should follow camel-casing,
-    | even though your database columns are snake-case.
-    |
-    */
 
     public function setSenderAttribute($value)
     {

@@ -35,12 +35,6 @@ Colaboradores
                         <div class="pull-left">
                             <h4 class="m-t-5 pull-left">
                                 {{ $user->name }}
-                                @if (!$user->active)
-                                <span class="label label-danger">Inativo</span>
-                                @endif
-                                @if ($user->password && ((!$user->is_operator && !$user->login_admin) || ($user->is_operator && !$user->login_app)))
-                                <i class="fas fa-ban text-red" data-toggle="tooltip" title="Utilizador bloqueado"></i>
-                                @endif
                             </h4>
                             <div class="clearfix"></div>
                             <ul class="list-inline m-b-0">
@@ -96,21 +90,6 @@ Colaboradores
                             <i class="fas fa-fw fa-info-circle"></i> Dados Pessoais
                         </a>
                     </li>
-                    <li>
-                        <a href="#tab-profissional-info" data-toggle="tab">
-                            <i class="fas fa-fw fa-briefcase"></i> Contrato e Salário
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#tab-login" data-toggle="tab">
-                            <i class="fas fa-fw fa-lock"></i> Acesso à Área de Gestão
-                            @if (empty($user->password))
-                            <i class="fa fa-exclamation-triangle pull-right text-yellow m-t-3"></i>
-                            @elseif(!$user->active)
-                            <i class="fa fa-ban pull-right text-red m-t-3"></i>
-                            @endif
-                        </a>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -123,14 +102,6 @@ Colaboradores
                 <div class="active tab-pane" id="tab-personal-info">
                     @include('admin.users.partials.personal_info')
                 </div>
-                @if(!empty($user->id))
-                    <div class="tab-pane" id="tab-profissional-info">
-                        @include('admin.users.partials.profissional_info')
-                    </div>
-                    <div class="tab-pane" id="tab-login">
-                        @include('admin.users.partials.login')
-                    </div>
-                @endif
             </div>
         </div>
     </div>

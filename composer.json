@@ -10,7 +10,7 @@
     "require": {
         "php": "^8.2",
         "anlutro/l4-settings": "^1.1",
-        "barryvdh/laravel-dompdf": "^1.0",
+        "barryvdh/laravel-dompdf": "^2.1",
         "barryvdh/laravel-translation-manager": "^0.6.2",
         "cviebrock/eloquent-sluggable": "^9.0",
         "fruitcake/laravel-cors": "^2.0.5",

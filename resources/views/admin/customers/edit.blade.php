@@ -65,14 +65,6 @@ $balanceDiffHours = \Carbon\Carbon::now()->diffInHours($lastBalanceDate);
                                 </h4>
                                 <div class="clearfix"></div>
                                 <ul class="list-inline m-b-0">
-                                    @if (!$customer->is_active)
-                                        <li>
-                                            <span class="label label-danger">Inativo</span>
-                                        </li>
-                                    @endif
-                                    @if (!$customer->is_prospect)
-                                        <li><small>Código:</small> <b>{{ $customer->code }}</b></li>
-                                    @endif
                                     @if ($customer->created_at)
                                         <li><small>Registo:</small> {{ @$customer->created_at->format('Y-m-d') }}</li>
                                     @endif
@@ -135,9 +127,6 @@ $balanceDiffHours = \Carbon\Carbon::now()->diffInHours($lastBalanceDate);
                         <li class="active">
                             <a href="#tab-info" data-toggle="tab"><i class="fa fa-fw fa-info-circle"></i> Dados Gerais</a>
                         </li>
-                        <li>
-                            <a href="#tab-login" data-toggle="tab"><i class="fa fa-fw fa-lock"></i> Área de Cliente</a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -146,9 +135,6 @@ $balanceDiffHours = \Carbon\Carbon::now()->diffInHours($lastBalanceDate);
             <div class="tab-content">
                 <div class="active tab-pane" id="tab-info">
                     @include('admin.customers.partials.info')
-                </div>
-                <div class="tab-pane" id="tab-login" data-empty="1">
-                    @include('admin.customers.partials.login')
                 </div>
             </div>
         </div>
@@ -191,7 +177,6 @@ $balanceDiffHours = \Carbon\Carbon::now()->diffInHours($lastBalanceDate);
         var parentTab = $('a[href="#tab-{{ Request::get('tab') }}"]').data('parent-tab');
         $('a[href="' + parentTab + '"]').trigger('click');
 
-        //Fill nif fields with search result
         $(document).on('click', '.vv-accept', function() {
             var $modal = $(this).closest('.modal');
             var targetId = '#' + $modal.find('[name="vv-target"]').val();

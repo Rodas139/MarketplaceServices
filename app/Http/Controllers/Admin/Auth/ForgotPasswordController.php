@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 
 class ForgotPasswordController extends \App\Http\Controllers\Admin\Controller
 {
@@ -14,13 +16,11 @@ class ForgotPasswordController extends \App\Http\Controllers\Admin\Controller
     | Password Reset Controller
     |--------------------------------------------------------------------------
     |
-    | This controller is responsible for handling password reset emails and
-    | includes a trait which assists in sending these notifications from
-    | your application to your users. Feel free to explore this trait.
+    | This controller is responsible for handling password reset requests
+    | without sending emails. The user inputs their email, and if it exists,
+    | they are redirected directly to the reset password form.
     |
     */
-
-    use SendsPasswordResetEmails;
 
     /**
      * The layout that should be used for responses
@@ -50,38 +50,45 @@ class ForgotPasswordController extends \App\Http\Controllers\Admin\Controller
     }
 
     /**
-     * Send a reset link to the given user.
+     * Validate email exists and redirect to reset form WITHOUT sending email
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function sendResetLinkEmail(Request $request)
     {
         $this->validate($request, ['email' => 'required|email']);
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
 
-        $response = $this->broker()->sendResetLink(
-            $request->only('email'),
-            $this->resetNotifier()
-        );
+        $email = $request->input('email');
 
-        if ($response === Password::RESET_LINK_SENT) {
-            return back()->with('status', trans($response));
+        // Check if email exists in users table and user has admin or provider role
+        $user = User::where('email', $email)
+                    ->whereHas('roles', function ($q) {
+                        $q->whereIn('name', [
+                            config('permission.role.admin'),
+                            'prestador'
+                        ]);
+                    })
+                    ->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Este e-mail não está registado como administrador ou prestador.']);
         }
 
-        // If an error was returned by the password broker, we will get this message
-        // translated so we can notify a user of the problem. We'll redirect back
-        // to where the users came from so they can attempt this process again.
-        return back()->withErrors(
-            ['email' => trans($response)]
+        // Generate a random token
+        $token = Str::random(64);
+
+        // Store token in password_resets table (optional, for tracking)
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => bcrypt($token),
+                'created_at' => now()
+            ]
         );
-    }
 
-
-    protected function resetNotifier()
-    {
-        return;
+        // Redirect directly to reset form with token and email
+        return Redirect::route('admin.password.reset', ['token' => $token, 'email' => $email])
+                       ->with('status', 'E-mail confirmado! Por favor, defina uma nova palavra-passe.');
     }
 }

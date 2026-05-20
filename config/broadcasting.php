@@ -40,6 +40,7 @@ return [
                 'useTLS' => true,
             ],
             'client_options' => [
+                'verify' => false, // Desabilita verificação SSL para desenvolvimento
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],
         ],

@@ -3,6 +3,7 @@
 // require base_path() . '/routes/website.php';
 require base_path() . '/routes/admin.php';
 require base_path() . '/routes/account.php';
+require base_path() . '/routes/provider.php';
 
 // require base_path() . '/routes/modules/tickets.php';
 Route::get('/start', function () {

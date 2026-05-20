@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Config;
 
 class ResetPasswordController extends Controller
@@ -15,8 +19,7 @@ class ResetPasswordController extends Controller
     |--------------------------------------------------------------------------
     |
     | This controller is responsible for handling password reset requests
-    | and uses a simple trait to include this behavior. You're free to
-    | explore this trait and override any methods you wish to tweak.
+    | without sending emails. User resets password directly after email verification.
     |
     */
 
@@ -54,5 +57,55 @@ class ResetPasswordController extends Controller
         $data = ['token' => $token, 'email' => $request->get('email')];
 
         return $this->setContent('auth.passwords.reset', $data);
+    }
+
+    /**
+     * Reset the given user's password without using Password Broker
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function reset(Request $request)
+    {
+        $this->validate($request, [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $email = $request->input('email');
+        $token = $request->input('token');
+        $password = $request->input('password');
+
+        // Check if email exists
+        $customer = Customer::where('email', $email)->first();
+
+        if (!$customer) {
+            return back()->withErrors(['email' => 'E-mail não encontrado.']);
+        }
+
+        // Verify token exists in password_resets table
+        $resetRecord = DB::table('password_resets')
+                        ->where('email', $email)
+                        ->first();
+
+        if (!$resetRecord) {
+            return back()->withErrors(['token' => 'Token inválido ou expirado.']);
+        }
+
+        // Check token expiry (60 minutes)
+        $tokenExpiry = $resetRecord->created_at;
+        if (now()->diffInMinutes($tokenExpiry) > 60) {
+            return back()->withErrors(['token' => 'Token expirado. Por favor, peça um novo.']);
+        }
+
+        // Update password
+        $customer->update(['password' => Hash::make($password)]);
+
+        // Delete the token after successful reset
+        DB::table('password_resets')->where('email', $email)->delete();
+
+        return Redirect::route('account.login')
+                       ->with('status', 'Palavra-passe alterada com sucesso! Por favor, inicie sessão.');
     }
 }

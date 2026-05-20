@@ -21,7 +21,7 @@
                     @endif
                     <div class="wrap-input100 validate-input" data-validate="Insira um e-mail válido.">
                         {{ Form::text('email', null, ['class' => 'input100 nospace']) }}
-                        <span class="focus-input100" data-placeholder="E-mail ou Código"></span>
+                        <span class="focus-input100" data-placeholder="E-mail"></span>
                     </div>
                     <div class="wrap-input100 validate-input" data-validate="Insira a palavra-passe.">
                         <span class="btn-show-pass">
@@ -30,18 +30,6 @@
                         {{ Form::password('password', ['class' => 'input100 nospace']) }}
                         <span class="focus-input100" data-placeholder="Palavra-Passe"></span>
                     </div>
-
-                    <label class="text-center remember-btn">
-                        <div class="pretty p-svg">
-                            <input type="checkbox" name="remember">
-                            <div class="state p-primary">
-                                <svg class="svg svg-icon" viewBox="0 0 20 20">
-                                    <path d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z" style="stroke: white;fill:white;"></path>
-                                </svg>
-                                <label>Manter sessão iniciada</label>
-                            </div>
-                        </div>
-                    </label>
 
                     <div class="container-login100-form-btn">
                         <div class="wrap-login100-form-btn">
@@ -57,6 +45,10 @@
                         <br/>
                         <a href="{{ route('admin.password.forgot') }}" class="txt2">
                             Recuperar Palavra-Passe
+                        </a>
+                        <br/>
+                        <a href="{{ route('admin.register') }}" class="txt2">
+                            Registar Prestador
                         </a>
                     </div>
                 </div>

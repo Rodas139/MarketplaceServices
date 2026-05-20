@@ -45,20 +45,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'code', 'code_abbrv', 'name', 'email', 'password', 'uncrypted_password', 'active', 'source',
-        'phone', 'mobile', 'obs', 'allowed_actions',
-        'location_enabled', 'location_denied', 'location_lat', 'location_lng', 'location_last_update',
-        'provider_id', 'settings', 'comission_percent', 'is_operator',
-
-        'salary_obs', 'salary_working_time_exemption', 'salary_expenses', 'salary_food_allowance', 'salary_value_hour',
-        'salary_price', 'fiscal_dependents', 'fiscal_titularity', 'fiscal_deficiency', 'fiscal_address', 'fiscal_zip_code',
-        'fiscal_city', 'fiscal_country', 'academic_degree', 'teaching_institution', 'course', 'course_avaliation',
-        'bank_swift', 'bank_iban', 'bank_name', 'professional_obs', 'professional_chief', 'professional_role',
-        'linkedin', 'twitter', 'facebook', 'vat', 'ss_card', 'id_card', 'emergency_mobile', 'emergency_phone',
-        'emergency_kinship', 'emergency_name', 'professional_mobile', 'professional_phone', 'professional_email',
-        'personal_mobile', 'personal_phone', 'personal_email', 'country', 'city', 'zip_code', 'address', 'about',
-        'nacionality', 'civil_status', 'gender', 'birthdate', 'fullname', 'admission_date', 'agency_id',
-        'login_app', 'login_admin', 'popup_notification', 'naturalness', 'can_see_all_orders'
+        'name',
+        'email',
+        'password',
+        'status',
+        'id_service'
     ];
 
     /**
@@ -81,54 +72,6 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    /**
-     * Set code
-     * @param bool $save
-     */
-    public function setCode($save = true)
-    {
-
-        $prefix = 'M';
-        $useEmptyCodes = false;
-
-        if ($useEmptyCodes) {
-
-            $allCodes = User::filterSource()
-                ->whereNotNull('code')
-                ->orderByRaw('CAST(REPLACE(code, "' . $prefix . '", "") as unsigned) asc')
-                ->select([DB::raw('(REPLACE(code, "' . $prefix . '", "")) as code')])
-                ->pluck('code')
-                ->toArray();
-
-            $allCodes      = array_values(array_filter(array_map('intval', $allCodes)));
-            $possibleCodes = range(1, end($allCodes));
-
-            $diff = array_diff($possibleCodes, $allCodes);
-
-            if (empty($diff)) {
-                $code = end($allCodes) + 1;
-            } else {
-                $code = @array_values($diff)[0];
-            }
-        } else {
-            $lastCode = User::filterSource()
-                ->whereNotNull('code')
-                ->orderByRaw('CAST(REPLACE(code, "' . $prefix . '", "") as unsigned) desc')
-                ->first([DB::raw('(REPLACE(code, "' . $prefix . '", "")) as code')]);
-
-            $code = empty($lastCode->code) ? 0 : intval($lastCode->code) + 1;
-        }
-
-        $code = str_pad($code, 3, '0', STR_PAD_LEFT);
-        $code = $prefix . $code;
-
-        if ($save) {
-            $this->code = $code;
-            $this->save();
-        }
-
-        return $code;
-    }
 
     /**
      * Return HTML signature for current user
@@ -288,8 +231,7 @@ class User extends Authenticatable
      */
     public function nextId()
     {
-        return User::filterSource()
-            ->where('id', '>', $this->id)
+        return User::where('id', '>', $this->id)
             ->min('id');
     }
 
@@ -300,8 +242,7 @@ class User extends Authenticatable
      */
     public function previousId()
     {
-        return User::filterSource()
-            ->where('id', '<', $this->id)
+        return User::where('id', '<', $this->id)
             ->max('id');
     }
 
@@ -327,8 +268,7 @@ class User extends Authenticatable
     {
         return $query->whereHas('roles', function ($q) {
             $q->where('name', '<>', config('permission.role.admin'));
-        })
-            ->where('active', 1);
+        });
     }
 
     public function getLocationStatus()
@@ -495,7 +435,15 @@ class User extends Authenticatable
 
     public function chief()
     {
-        return $this->belongsTo('App\Models\User', 'professional_chief_id');
+        return $this->belongsTo(User::class, 'professional_chief_id');
+    }
+
+    /**
+     * Get the service provided by this user
+     */
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'id_service');
     }
 
     /*
@@ -583,11 +531,6 @@ class User extends Authenticatable
     public function setAdmissionDateAttribute($value)
     {
         $this->attributes['admission_date'] = empty($value) ? null : $value;
-    }
-
-    public function getIpAttribute()
-    {
-        return long2ip($this->attributes['ip']);
     }
 
     public function getAllowedActionsAttribute()
