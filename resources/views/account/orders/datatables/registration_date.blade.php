@@ -1,0 +1,1 @@
+{{\Carbon\Carbon::parse($row->registration_date)->format('Y-m-d')}}
