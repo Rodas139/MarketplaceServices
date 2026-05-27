@@ -92,17 +92,17 @@
 			const senderName = (notification.sender && notification.sender.name) ? notification.sender.name : 'Sistema';
 			const formattedDate = notification.alert_at_formatted || formatDate(notification.alert_at);
 			const isRead = notification.is_read_by_user ? 'read' : '';
-			const readIcon = notification.is_read_by_user ? '<i class="fas fa-check-double text-muted" style="font-size: 0.7rem;"></i>' : '';
+			const readIcon = notification.is_read_by_user ? '<i class="fas fa-check-double text-muted" style="font-size: 0.85rem;"></i>' : '';
             
 			const html = `
 				<li class="notification-item ${notification.type} ${isRead}" style="${notification.is_read_by_user ? 'opacity: 0.6;' : ''}">
 					<a href="#">
 						<div class="notification-header">
-							<strong>${notification.title} ${readIcon}</strong>
-							<small class="text-muted">${formattedDate}</small>
+							<strong style="font-size: 1.15rem;">${notification.title} ${readIcon}</strong>
+							<small class="text-muted" style="font-size: 0.95rem; white-space: nowrap; margin-left: 10px;">${formattedDate}</small>
 						</div>
-						<p class="notification-message">${notification.message}</p>
-						<small class="notification-sender">Por: ${senderName}</small>
+						<p class="notification-message" style="font-size: 1.05rem;">${notification.message}</p>
+						<small class="notification-sender" style="font-size: 0.95rem;">Por: ${senderName}</small>
 					</a>
 				</li>
 			`;

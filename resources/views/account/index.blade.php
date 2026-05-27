@@ -23,7 +23,7 @@
                                 <option value="pending">Pendente</option>
                                 <option value="declined">Recusado</option>
                                 <option value="accepted">Aceite</option>
-                                <option value="completed">Completo</option>
+                                <option value="completed">Concluído</option>
                             </select>
                             @if(request('status'))
                                 <a href="{{ route('account.index') }}" class="btn btn-default">

@@ -48,7 +48,8 @@
                     {{ trans('auth.reset.title') }}
                 </button>
             </div>
-            @section('styles')
-                {{ Html::style('/assets/css/auth.css') }}
-            @stop
+@stop
+
+@section('styles')
+    {{ Html::style('/assets/css/auth.css') }}
 @stop

@@ -51,7 +51,11 @@
                 @endif
 
                 {{-- NOTIFICATIONS --}}
-                @include('admin.notifications.bell')
+                @if (Auth::user()->hasRole('prestador'))
+                    @include('provider.notifications.bell')
+                @else
+                    @include('admin.notifications.bell')
+                @endif
 
                 {{-- USER ACCOUNT --}}
                 <!-- User Account Menu -->

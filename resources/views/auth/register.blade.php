@@ -61,18 +61,25 @@ Criar Conta
             <div class="form-group{{ $errors->has('password_confirmation') ? ' has-error' : '' }}">
                 {!! Form::label('password_confirmation', 'Confirmar Palavra-passe') !!}
                 {!! Form::password('password_confirmation', ['class' => 'form-control login-input', 'required']) !!}
-                @section('styles')
-                    {{ Html::style('/assets/css/auth.css') }}
-                @stop
-            color: #1f2937;
-            text-decoration: none;
-            font-weight: 600;
-        }
+            </div>
 
-        @media (max-width: 600px) {
-            .login-card {
-                padding: 20px;
-            }
-        }
-    </style>
+            <div class="form-group">
+                <button type="submit" class="btn btn-lg btn-block btn-primary login-submit">
+                    Criar Conta
+                </button>
+            </div>
+
+            <div class="login-links">
+                <a href="{{ route('account.login') }}">
+                    <i class="fa fa-arrow-left"></i> Voltar ao Login
+                </a>
+            </div>
+
+            {!! Form::close() !!}
+        </div>
+    </div>
+@stop
+
+@section('styles')
+    {{ Html::style('/assets/css/auth.css') }}
 @stop

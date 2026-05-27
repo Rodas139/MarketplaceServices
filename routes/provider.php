@@ -3,6 +3,12 @@
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('prestador')->middleware(['auth.admin'])->group(function () {
+    // Notifications 
+    Route::get('notificacoes/api/recentes', [App\Http\Controllers\Admin\Notifications\NotificationsController::class, 'getRecent'])
+        ->name('provider.notifications.api.recent');
+    Route::post('notificacoes/api/marcar-lidas', [App\Http\Controllers\Admin\Notifications\NotificationsController::class, 'markAsRead'])
+        ->name('provider.notifications.api.mark-read');
+
     // Orders
     Route::get('pedidos', [App\Http\Controllers\Provider\Orders\OrdersController::class, 'index'])
         ->name('provider.orders.index');

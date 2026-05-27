@@ -33,6 +33,7 @@
         {{ Html::style('/assets/css/custom.css') }}
         {{ Html::style('/assets/css/default.css') }}
         {{ Html::style('/assets/css/account.css?v=1') }}
+        {{ Html::style('/assets/css/notifications-bell.css') }}
         {{ Html::style('/assets/admin/css/skins/' . app_skin() . '.css') }}
 
         @yield('styles')

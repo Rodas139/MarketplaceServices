@@ -20,3 +20,8 @@
 {{ HTML::style('/assets/admin/css/helper.css') }}
 {{ HTML::style('/assets/admin/css/main.css') }}
 {{ HTML::style('/assets/admin/css/admin.css') }}
+{{ HTML::style('/assets/css/notifications-bell.css') }}
+
+@if (Auth::check() && Auth::user()->hasRole('prestador'))
+	{{ HTML::style('/assets/css/provider.css') }}
+@endif

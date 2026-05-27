@@ -53,7 +53,5 @@ Recuperar Palavra-Passe
 @stop
 
 @section('styles')
-    @section('styles')
-        {{ Html::style('/assets/css/auth.css') }}
-    @stop
-        }
+    {{ Html::style('/assets/css/auth.css') }}
+@stop

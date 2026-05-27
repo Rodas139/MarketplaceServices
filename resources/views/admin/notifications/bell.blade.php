@@ -36,64 +36,6 @@
     </ul>
 </li>
 
-<style>
-    #notificationsDropdown .notification-item {
-        padding: 0;
-        border-bottom: 1px solid #f0f0f0;
-        transition: background-color 0.2s;
-    }
-    
-    #notificationsDropdown .notification-item a {
-        display: block;
-        padding: 12px;
-        color: inherit;
-        text-decoration: none;
-    }
-    
-    #notificationsDropdown .notification-item a:hover {
-        background-color: #f9f9f9;
-    }
-    
-    #notificationsDropdown .notification-item.info {
-        border-left: 3px solid #0d6efd;
-    }
-    
-    #notificationsDropdown .notification-item.success {
-        border-left: 3px solid #198754;
-    }
-    
-    #notificationsDropdown .notification-item.warning {
-        border-left: 3px solid #ffc107;
-    }
-    
-    #notificationsDropdown .notification-item.error {
-        border-left: 3px solid #dc3545;
-    }
-    
-    #notificationsDropdown .notification-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 5px;
-    }
-    
-    #notificationsDropdown .notification-header strong {
-        font-size: 0.95rem;
-        color: #333;
-    }
-    
-    #notificationsDropdown .notification-message {
-        font-size: 0.85rem;
-        color: #666;
-        margin: 5px 0;
-    }
-    
-    #notificationsDropdown .notification-sender {
-        font-size: 0.75rem;
-        color: #999;
-    }
-</style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         updateUnreadCount();

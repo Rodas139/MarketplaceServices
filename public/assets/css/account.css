@@ -401,18 +401,19 @@ body {
 }
 
 #notificationsDropdown .notification-header strong {
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     color: #333;
 }
 
 #notificationsDropdown .notification-message {
-    font-size: 0.85rem;
+    font-size: 1.15rem;
     color: #666;
-    margin: 5px 0;
+    margin: 6px 0;
+    line-height: 1.4;
 }
 
 #notificationsDropdown .notification-sender {
-    font-size: 0.75rem;
+    font-size: 1.00rem;
     color: #999;
 }
 

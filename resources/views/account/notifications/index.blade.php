@@ -77,17 +77,17 @@
                 const senderName = (notification.sender && notification.sender.name) ? notification.sender.name : 'Sistema';
                 const formattedDate = notification.alert_at_formatted || new Date(notification.alert_at).toLocaleString();
                 const isRead = notification.is_read_by_user ? 'read' : '';
-                const readIcon = notification.is_read_by_user ? '<i class="fas fa-check-double text-muted" style="font-size: 0.85rem;"></i>' : '';
+                const readIcon = notification.is_read_by_user ? '<i class="fas fa-check-double text-muted" style="font-size: 0.9rem;"></i>' : '';
 
                 const html = `
                     <div class="notification-item ${notification.type} ${isRead}" data-id="${notification.id}" style="${notification.is_read_by_user ? 'opacity: 0.6;' : ''}">
                         <a href="#">
                             <div class="notification-header">
-                                <strong style="font-size: 1.05rem;">${notification.title} ${readIcon}</strong>
-                                <small class="text-muted" style="font-size: 0.95rem; white-space: nowrap; margin-left: 10px;">${formattedDate}</small>
+                                <strong style="font-size: 1.2rem;">${notification.title} ${readIcon}</strong>
+                                <small class="text-muted" style="font-size: 1rem; white-space: nowrap; margin-left: 10px;">${formattedDate}</small>
                             </div>
-                            <p class="notification-message" style="font-size: 0.98rem;">${notification.message}</p>
-                            <small class="notification-sender" style="font-size: 0.92rem;">Por: ${senderName}</small>
+                            <p class="notification-message" style="font-size: 1.1rem;">${notification.message}</p>
+                            <small class="notification-sender" style="font-size: 1rem;">Por: ${senderName}</small>
                         </a>
                     </div>
                 `;
@@ -99,7 +99,7 @@
         }
 
         /**
-         * Mark all notifications as read via API
+         * Mark all notifications
          */
         function markNotificationsAsRead() {
             fetch('{{ route("account.notifications.api.mark-read") }}', {
