@@ -22,6 +22,7 @@ class UserSeeder extends Seeder
         ], [
             'name' => 'Estagiario',
             'email' => 'estagiario@enovo.pt',
+            'status' => 'active',
             'password' => bcrypt('password')
         ]);
 
